@@ -15,20 +15,21 @@ with app.app_context():
     db.session.add(user)
     db.session.commit()
 
-    # Add location data to database later!
     measurement1 = Measurement(
         user_id=user.id,
         timestamp=datetime.now(timezone.utc),
         temperature=22.5,
         humidity=55,
-        air_pressure=1013.2
+        air_pressure=1013.2,
+        location="living room"
     )
     measurement2 = Measurement(
         user_id=user.id,
         timestamp=datetime.now(timezone.utc),
         temperature=23.1,
         humidity=53,
-        air_pressure=1012.8
+        air_pressure=1012.8,
+        location="bedroom"
     )
 
     db.session.add_all([measurement1, measurement2])

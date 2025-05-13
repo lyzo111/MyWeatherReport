@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>My Weather Report</title>
+</head>
+<body>
+    <h1>Current Weather Data</h1>
+
+    {% if weather %}
+        <p>Temperature: {{ weather.temperature }}°C</p>
+        <p>Humidity: {{ weather.humidity }}%</p>
+        <p>Air Pressure: {{ weather.air_pressure }}%</p>
+        <p>Timestamp: {{ weather.timestamp }}</p>
+    {% else %}
+        <p>No weather data available.</p>
+    {% endif %}
+</body>
+</html>

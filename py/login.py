@@ -1,42 +1,42 @@
 from datetime import timedelta
+from flask import Blueprint, request, session, redirect, url_for, current_app
+from db_model import User
+import hashlib
 
-from flask import Flask, request, session, redirect, url_for
+auth = Blueprint('auth', __name__)
 
-app = Flask(__name__)
-# from login import something
-
-app.secret_key = '''Rahmp! Di, tsu-ga-mm-gi-guk, gi
+@auth.before_app_first_request
+def setup_session_settings():
+    current_app.secret_key = '''Rahmp! Di, tsu-ga-mm-gi-guk, gi
 Guga fli-gu-gi-gu, ga fli-gu-gi-gu, d-dee-ee
 Yu-gu-guk di, yu-go-go-gu-gu-ga-be
 Fli-gu-gi-gu, a-fli-gu-gi-ga whoo-ma-mama'''
-app.permanent_session_lifetime = timedelta(minutes=30)
+    current_app.permanent_session_lifetime = timedelta(minutes=30)
 
-# Dummy user db -> remove?
-USERS = {
-    'admin': 'admin123',
-    'donero': 'ewedon'
-}
+def hash_password_sha256(password: str) -> str:
+    return hashlib.sha256(password.encode('utf-8')).hexdigest()
 
-@app.route('/')
+@auth.route('/')
 def index():
     if 'username' in session:
         return f"Hello {session['username']}! <br><a href='/logout'>Logout</a>"
     return 'Not logged in. <a href="/login">Login</a>'
 
-@app.route('/login', methods=['GET', 'POST'])
+@auth.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        hashed_input = hash_password_sha256(password)
 
-        if username in USERS and USERS[username] == password:
+        user = User.query.filter_by(username=username).first()
+        if user and user.password_hash == hashed_input:
             session.permanent = True
             session['username'] = username
-            return redirect(url_for('index'))
+            return redirect(url_for('auth.index'))
         else:
             return 'Login fehlgeschlagen. <a href="/login">Nochmal versuchen</a>'
 
-    # GET: show login form
     return '''
     <form method="post">
         Benutzername: <input type="text" name="username"><br>
@@ -45,10 +45,7 @@ def login():
     </form>
     '''
 
-@app.route('/logout')
+@auth.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('index'))
-
-if __name__ == '__main__':
-    app.run(debug=True)
+    return redirect(url_for('auth.index'))

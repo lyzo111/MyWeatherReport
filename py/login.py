@@ -1,46 +1,39 @@
 from datetime import timedelta
-from flask import Blueprint, request, session, redirect, url_for, current_app
+from flask import Blueprint, request, session, redirect, url_for, current_app, render_template
 from db_model import User
-import hashlib
+from werkzeug.security import generate_password_hash, check_password_hash
 
 auth = Blueprint('auth', __name__)
 
-@auth.before_app_first_request
-def setup_session_settings():
-    current_app.secret_key = '''Rahmp! Di, tsu-ga-mm-gi-guk, gi
-Guga fli-gu-gi-gu, ga fli-gu-gi-gu, d-dee-ee
-Yu-gu-guk di, yu-go-go-gu-gu-ga-be
-Fli-gu-gi-gu, a-fli-gu-gi-ga whoo-ma-mama'''
-    current_app.permanent_session_lifetime = timedelta(minutes=30)
-
-def hash_password_sha256(password: str) -> str:
-    return hashlib.sha256(password.encode('utf-8')).hexdigest()
+current_app.permanent_session_lifetime = timedelta(minutes=30)
 
 @auth.route('/')
 def index():
     if 'username' in session:
-        return f"Hello {session['username']}! <br><a href='/logout'>Logout</a>"
-    return 'Not logged in. <a href="/login">Login</a>'
+        username = session['username']
+    else:
+        username = None
+
+    return render_template('index.html', username=username)
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        hashed_input = hash_password_sha256(password)
 
         user = User.query.filter_by(username=username).first()
-        if user and user.password_hash == hashed_input:
+        if user and check_password_hash(user.password_hash, password):
             session.permanent = True
             session['username'] = username
             return redirect(url_for('auth.index'))
         else:
-            return 'Login fehlgeschlagen. <a href="/login">Nochmal versuchen</a>'
+            return 'Login failed. <a href="/login">Try again.</a>'
 
     return '''
     <form method="post">
-        Benutzername: <input type="text" name="username"><br>
-        Passwort: <input type="password" name="password"><br>
+        username: <input type="text" name="username"><br>
+        password: <input type="password" name="password"><br>
         <input type="submit" value="Login">
     </form>
     '''
@@ -49,3 +42,8 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for('auth.index'))
+
+@auth.route('/register', methods=['GET', 'POST'])
+def register():
+    if 'username' in session:
+        return redirect(url_for('auth.index'))

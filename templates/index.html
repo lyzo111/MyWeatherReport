@@ -1,19 +1,26 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>My Weather Report</title>
 </head>
 <body>
-    <h1>Current Weather Data</h1>
+    {% if username %}
+        <p>Welcome, {{ username }}! <a href="/logout"><button>Logout</button></a></p>
+    {% else %}
+        <a href="/login"><button>Login</button></a>
+        <a href="/register"><button>Register</button></a>
+    {% endif %}
 
     {% if weather %}
+        <h1>Current Weather Data</h1>
+
         <p>Temperature: {{ weather.temperature }}°C</p>
         <p>Humidity: {{ weather.humidity }}%</p>
         <p>Air Pressure: {{ weather.air_pressure }}%</p>
         <p>Timestamp: {{ weather.timestamp }}</p>
     {% else %}
-        <p>No weather data available.</p>
+        <h2>No weather data available.</h2>
     {% endif %}
 </body>
 </html>

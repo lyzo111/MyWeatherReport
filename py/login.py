@@ -45,5 +45,33 @@ def logout():
 
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
+    from db_model import db
     if 'username' in session:
         return redirect(url_for('auth.index'))
+
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        if not username or not password:
+            return "Please provide both username and password."
+
+        # Check if user already exists
+        if User.query.filter_by(username=username).first():
+            return "Username already taken. <a href='/register'>Try again</a>"
+
+        new_user = User(username=username)
+        new_user.set_password(password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        return redirect(url_for('auth.login'))
+
+    return '''
+        <h2>Register</h2>
+        <form method="post">
+            Username: <input type="text" name="username"><br>
+            Password: <input type="password" name="password"><br>
+            <input type="submit" value="Register">
+        </form>
+        '''

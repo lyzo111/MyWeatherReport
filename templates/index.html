@@ -6,7 +6,7 @@
 </head>
 <body>
     {% if username %}
-        <p>Welcome, {{ username }}! <a href="/logout"><button>Logout</button></a></p>
+        <p id="welcome-message">Welcome, {{ username }}! <a href="/logout"><button>Logout</button></a></p>
     {% else %}
         <a href="/login"><button>Login</button></a>
         <a href="/register"><button>Register</button></a>
@@ -22,5 +22,16 @@
     {% else %}
         <h2>No weather data available.</h2>
     {% endif %}
+
+    <script>
+      setTimeout(function () {
+        const welcomeMessage = document.getElementById('welcome-message');
+        if (welcomeMessage) {
+          welcomeMessage.style.transition = "opacity 1s ease-out";
+          welcomeMessage.style.opacity = "0";  // Fade out effect
+          setTimeout(() => welcomeMessage.remove(), 1000);  // Remove from DOM
+        }
+      }, 10000); // 10 Seconds in milliseconds
+    </script>
 </body>
 </html>

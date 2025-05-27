@@ -52,15 +52,22 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        email = request.form['email']
 
-        if not username or not password:
-            return "Please provide both username and password."
+        if not username or not password or not email:
+            return "All fields are required."
 
         # Check if user already exists
         if User.query.filter_by(username=username).first():
-            return "Username already taken. <a href='/register'>Try again</a>"
+            return "Username already taken."
 
-        new_user = User(username=username)
+        is_first_user = User.query.count() == 0
+
+        new_user = User(
+            username=username,
+            email=email,
+            is_admin=is_first_user # First user is admin
+        )
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()

@@ -3,6 +3,7 @@ from flask import Blueprint, request, session, redirect, url_for, current_app, r
 from db_model import User
 from werkzeug.security import generate_password_hash, check_password_hash
 
+
 auth = Blueprint('auth', __name__)
 
 current_app.permanent_session_lifetime = timedelta(minutes=30)
@@ -52,10 +53,12 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        email = request.form['email']
 
-        if not username or not password or not email:
+        if not username or not password:
             return "All fields are required."
+
+        if len(password) < 6:
+            return "Password must be at least 6 characters long."
 
         # Check if user already exists
         if User.query.filter_by(username=username).first():
@@ -65,7 +68,6 @@ def register():
 
         new_user = User(
             username=username,
-            email=email,
             is_admin=is_first_user # First user is admin
         )
         new_user.set_password(password)

@@ -1,12 +1,9 @@
-from datetime import timedelta
 from flask import Blueprint, request, session, redirect, url_for, current_app, render_template
 from db_model import User
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
 auth = Blueprint('auth', __name__)
-
-current_app.permanent_session_lifetime = timedelta(minutes=30)
 
 @auth.route('/')
 def index():
@@ -31,13 +28,6 @@ def login():
         else:
             return 'Login failed. <a href="/login">Try again.</a>'
 
-    return '''
-    <form method="post">
-        username: <input type="text" name="username"><br>
-        password: <input type="password" name="password"><br>
-        <input type="submit" value="Login">
-    </form>
-    '''
 
 @auth.route('/logout')
 def logout():
@@ -75,12 +65,3 @@ def register():
         db.session.commit()
 
         return redirect(url_for('auth.login'))
-
-    return '''
-        <h2>Register</h2>
-        <form method="post">
-            Username: <input type="text" name="username"><br>
-            Password: <input type="password" name="password"><br>
-            <input type="submit" value="Register">
-        </form>
-        '''

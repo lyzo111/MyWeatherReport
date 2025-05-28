@@ -1,5 +1,5 @@
 from flask import Blueprint, request, session, redirect, url_for, current_app, render_template
-from db_model import User
+from db_model import User, db
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
@@ -36,7 +36,6 @@ def logout():
 
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
-    from db_model import db
     if 'username' in session:
         return redirect(url_for('auth.index'))
 

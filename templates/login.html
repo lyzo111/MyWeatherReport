@@ -7,9 +7,14 @@
 <body>
     <h2>Login</h2>
     <form method="post">
-        username: <input type="text" name="username"><br>
-        password: <input type="password" name="password"><br>
+        <input type="text" name="username" placeholder="username"><br>
+        <input type="password" name="password" placeholder="password"><br>
         <input type="submit" value="Enter">
     </form>
+
+    <p>Don't have an account? <a href="/register">Register here</a></p>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
 </body>
 </html>

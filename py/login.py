@@ -16,6 +16,8 @@ def index():
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
+    error = None
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -25,10 +27,12 @@ def login():
             session.permanent = True
             session['username'] = username
             return redirect(url_for('auth.index'))
+        elif not username or not password:
+            error = 'All fields are required.'
         else:
-            return 'Login failed. <a href="/login">Try again.</a>'
+            error = 'Entered credentials do not belong to any account. Try again or register.'
 
-    return render_template('login.html')
+    return render_template('login.html', error=error)
 
 
 @auth.route('/logout')
@@ -38,6 +42,8 @@ def logout():
 
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
+    error = None
+
     if 'username' in session:
         return redirect(url_for('auth.index'))
 
@@ -46,25 +52,26 @@ def register():
         password = request.form['password']
 
         if not username or not password:
-            return "All fields are required."
+            error = "All fields are required."
 
-        if len(password) < 6:
-            return "Password must be at least 6 characters long."
+        if 0 < len(password) < 6 and username:
+            error = "Password must be at least 6 characters long."
 
         # Check if user already exists
         if User.query.filter_by(username=username).first():
-            return "Username already taken."
+            error = "Username already taken."
 
-        is_first_user = User.query.count() == 0
+        if error is None:
+            is_first_user = User.query.count() == 0
 
-        new_user = User(
-            username=username,
-            is_admin=is_first_user # First user is admin
-        )
-        new_user.set_password(password)
-        db.session.add(new_user)
-        db.session.commit()
+            new_user = User(
+                username=username,
+                is_admin=is_first_user # First user is admin
+            )
+            new_user.set_password(password)
+            db.session.add(new_user)
+            db.session.commit()
 
-        return redirect(url_for('auth.login'))
+            return redirect(url_for('auth.login'))
 
-    return render_template('registration.html')
+    return render_template('registration.html', error=error)

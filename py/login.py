@@ -28,6 +28,8 @@ def login():
         else:
             return 'Login failed. <a href="/login">Try again.</a>'
 
+    return render_template('login.html')
+
 
 @auth.route('/logout')
 def logout():
@@ -64,3 +66,5 @@ def register():
         db.session.commit()
 
         return redirect(url_for('auth.login'))
+
+    return render_template('registration.html')

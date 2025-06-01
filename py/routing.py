@@ -26,7 +26,7 @@ def login():
         password = request.form['password']
 
         user = User.query.filter_by(username=username).first()
-        if user and check_password_hash(user.password_hash, password):
+        if user and user.check_password(password):
             session.permanent = True
             session['username'] = username
             return redirect(url_for('auth.index'))

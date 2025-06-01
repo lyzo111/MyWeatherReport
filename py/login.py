@@ -18,6 +18,9 @@ def index():
 def login():
     error = None
 
+    if 'username' in session:
+        return redirect(url_for('auth.index'))
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']

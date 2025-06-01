@@ -1,7 +1,7 @@
 import os.path
 from flask import Flask
 from db_model import db
-from login import auth
+from routing import auth
 from datetime import timedelta
 from secrets import token_hex
 

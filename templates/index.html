@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>My Weather Report</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     {% if weather %}
@@ -16,6 +17,39 @@
         <h2>No weather data available</h2>
     {% endif %}
 
+
+    <form method="post" action="/" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".csv" required>
+        <input type="submit" value="Upload CSV">
+    </form>
+
+
+    {% if preview_data %}
+    <h3>Preview</h3>
+    <table>
+        <tr>
+            <th>Timestamp</th><th>Temp</th><th>Humidity</th><th>Pressure</th><th>Location</th>
+        </tr>
+        {% for row in preview_data %}
+        <tr>
+            <td>{{ row.timestamp }}</td>
+            <td>{{ row.temperature }}</td>
+            <td>{{ row.humidity }}</td>
+            <td>{{ row.air_pressure }}</td>
+            <td>{{ row.location }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <form method="post" action="/save_csv">
+        <input type="hidden" name="session_csv" value="1">
+        <button type="submit">Save to Database</button>
+    </form>
+    {% endif %}
+
+
+    <canvas id="weatherChart" width="600" height="300"></canvas>
+
+
     {% if username %}
         <p id="welcome-message">Welcome, {{ username }}! <a href="/logout"><button>Logout</button></a></p>
     {% else %}
@@ -23,15 +57,15 @@
         <a href="/register"><button>Register</button></a>
     {% endif %}
 
+
+    <!-- JS chart logic -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+
     <script>
-      setTimeout(function () {
-        const welcomeMessage = document.getElementById('welcome-message');
-        if (welcomeMessage) {
-          welcomeMessage.style.transition = "opacity 1s ease-out";
-          welcomeMessage.style.opacity = "0";  // Fade out effect
-          setTimeout(() => welcomeMessage.remove(), 1000);  // Remove from DOM
-        }
-      }, 10000); // 10 Seconds in milliseconds
+        window.weatherLabels = [{% for m in measurements %}'{{ m.timestamp }}', {% endfor %}];
+        window.weatherData = [{% for m in measurements %}{{ m.temperature }}, {% endfor %}];
     </script>
+
 </body>
 </html>

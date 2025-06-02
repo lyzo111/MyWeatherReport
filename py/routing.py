@@ -5,7 +5,7 @@ from werkzeug.security import check_password_hash
 
 auth = Blueprint('auth', __name__)
 
-@auth.route('/')
+@auth.route('/', methods=['GET', 'POST'])
 def index():
     if 'username' in session:
         username = session['username']

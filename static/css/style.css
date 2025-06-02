@@ -13,7 +13,7 @@ body {
     background-color: rgba(0,0,0,0.4);
     font-family: Arial, sans-serif;
     padding: 2rem;
-    color: #111827;
+    color: #f1f5f9;
 }
 
 body::before {
@@ -29,7 +29,6 @@ body::before {
 
 h1, h2, h3 {
     text-align: center;
-    color: #1f2937;
     margin-bottom: 1rem;
 }
 

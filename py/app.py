@@ -6,7 +6,11 @@ from datetime import timedelta
 from secrets import token_hex
 
 def create_app():
-    app = Flask(__name__, template_folder=os.path.abspath('../templates'))
+    app = Flask(
+        __name__,
+        static_folder=os.path.abspath('../static'),
+        template_folder=os.path.abspath('../templates')
+    )
     app.secret_key = token_hex(32)  # Generate a random secret key
 
     # Database config

@@ -3,22 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <title>Registration - My Weather Report</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 </head>
 <body>
     <div class="auth-container">
-       <form method="post">
-            <input type="text" name="username" placeholder="username"><br>
-            <input type="password" name="password" placeholder="password"><br>
-            <input type="submit" value="Enter">
+        <form method="post">
+            <h2>Registration</h2>
+
+            <div class="input-group">
+                <input type="text" name="username" placeholder="username" required>
+                {% if error_username %}
+                    <span class="field-error">{{ error_username }}</span>
+                {% endif %}
+            </div>
+
+            <div class="input-group">
+                <input type="password" name="password" placeholder="password" required>
+                {% if error_password %}
+                    <span class="field-error">{{ error_password }}</span>
+                {% endif %}
+            </div>
+
+            <div class="button-group">
+                <input type="submit" value="Enter">
+                <a href="/login" class="alt-button">Already registered? Login here</a>
+            </div>
         </form>
-
-        <p>Already have an account? <a href="/login"><button>Login here</button></a></p>
-        {% if error %}
-        <p style="color: red;">{{ error }}</p>
-        {% endif %}
     </div>
-    <h2>Registration</h2>
-
 </body>
 </html>

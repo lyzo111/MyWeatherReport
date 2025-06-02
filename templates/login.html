@@ -3,19 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <title>Login - My Weather Report</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 </head>
 <body>
-    <h2>Login</h2>
-    <form method="post">
-        <input type="text" name="username" placeholder="username"><br>
-        <input type="password" name="password" placeholder="password"><br>
-        <input type="submit" value="Enter">
-    </form>
+    <div class="auth-container">
+        <form method="post">
+            <h2>Login</h2>
 
-    <p>Don't have an account? <a href="/register"><button>Register here</button></a></p>
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% endif %}
+            <div class="input-group">
+                <input type="text" name="username" placeholder="username" required>
+                {% if error_username %}
+                    <span class="field-error">{{ error_username }}</span>
+                {% endif %}
+            </div>
+
+            <div class="input-group">
+                <input type="password" name="password" placeholder="password" required>
+                {% if error_password %}
+                    <span class="field-error">{{ error_password }}</span>
+                {% endif %}
+            </div>
+
+            <div class="button-group">
+                <input type="submit" value="Enter">
+                <a href="/register" class="alt-button">Not registered yet? Register here</a>
+            </div>
+        </form>
+    </div>
 </body>
 </html>

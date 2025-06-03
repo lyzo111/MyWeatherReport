@@ -8,32 +8,30 @@
 </head>
 <body>
     <div class="auth-container">
-        <form method="post">
-            <h2>Registration</h2>
+        <div class="auth-box">
+            <form class="auth-form" method="post">
+                <h2>Registration</h2>
 
-            {% if error %}
-                <b class="error-message">{{ error }}</b>
-            {% endif %}
+                <div class="input-group">
+                    <label for="username">Username:</label>
+                    <input type="text" name="username" id="username" value="{{ username }}" required>
+                </div>
 
-            <div class="input-group">
-                <input type="text" name="username" placeholder="username" value="{{ username }}">
-                {% if error_username %}
-                    <span class="field-error">{{ error_username }}</span>
+                <div class="input-group">
+                    <label for="password">Password:</label>
+                    <input type="password" name="password" id="password" required>
+                </div>
+
+                <div class="button-group">
+                    <input type="submit" value="Register" class="auth-submit">
+                    <a href="/login" class="alt-button">Switch to Login</a>
+                </div>
+
+                {% if error %}
+                    <div class="error-message">{{ error }}</div>
                 {% endif %}
-            </div>
-
-            <div class="input-group">
-                <input type="password" name="password" placeholder="password">
-                {% if error_password %}
-                    <span class="field-error">{{ error_password }}</span>
-                {% endif %}
-            </div>
-
-            <div class="button-group">
-                <input type="submit" value="Enter">
-                <a href="/login" class="alt-button">Already registered? Login here</a>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </body>
 </html>

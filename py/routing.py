@@ -134,6 +134,21 @@ def index():
                 query = query.order_by(Measurement.location.asc())
             else:
                 query = query.order_by(Measurement.location.desc())
+        elif sort_by == 'temperature':
+            if sort_order == 'asc':
+                query = query.order_by(Measurement.temperature.asc())
+            else:
+                query = query.order_by(Measurement.temperature.desc())
+        elif sort_by == 'humidity':
+            if sort_order == 'asc':
+                query = query.order_by(Measurement.humidity.asc())
+            else:
+                query = query.order_by(Measurement.humidity.desc())
+        elif sort_by == 'air_pressure':
+            if sort_order == 'asc':
+                query = query.order_by(Measurement.air_pressure.asc())
+            else:
+                query = query.order_by(Measurement.air_pressure.desc())
         else:  # default to id
             if sort_order == 'asc':
                 query = query.order_by(Measurement.id.asc())

@@ -63,7 +63,7 @@
     <!-- CSV Import Section -->
     <div class="data-section">
         <div class="section-title">
-            <div class="section-header">
+            <div class="title-with-info">
                 <h3>Import Weather Data</h3>
                 <button class="info-button" onclick="showInfoPopup('import')">ℹ️</button>
             </div>
@@ -151,6 +151,9 @@
                             <option value="id" {% if current_filters.sort_by == 'id' %}selected{% endif %}>ID</option>
                             <option value="timestamp" {% if current_filters.sort_by == 'timestamp' %}selected{% endif %}>Timestamp</option>
                             <option value="location" {% if current_filters.sort_by == 'location' %}selected{% endif %}>Location</option>
+                            <option value="temperature" {% if current_filters.sort_by == 'temperature' %}selected{% endif %}>Temperature</option>
+                            <option value="humidity" {% if current_filters.sort_by == 'humidity' %}selected{% endif %}>Humidity</option>
+                            <option value="air_pressure" {% if current_filters.sort_by == 'air_pressure' %}selected{% endif %}>Pressure</option>
                         </select>
                     </div>
 

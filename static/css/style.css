@@ -133,3 +133,104 @@ table.csv-preview td {
     padding: 8px;
     text-align: center;
 }
+
+.filter-section {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+    margin: 1rem auto;
+    border-radius: 8px;
+    max-width: 1200px;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.filter-group label {
+    font-weight: bold;
+    color: #f1f5f9;
+    font-size: 0.9rem;
+}
+
+.filter-group input, .filter-group select {
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #ccd;
+    background-color: white;
+    color: black;
+}
+
+.range-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.data-section {
+    margin: 2rem auto;
+    max-width: 1200px;
+}
+
+.section-title {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.live-data-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.no-data-message {
+    text-align: center;
+    padding: 2rem;
+    color: #ccc;
+    font-style: italic;
+}
+
+.welcome-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: rgba(46, 204, 113, 0.9);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    transition: opacity 1s ease-out;
+}
+
+.auth-buttons {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    gap: 0.5rem;
+    z-index: 1000;
+}
+
+.small-button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+}

@@ -16,6 +16,7 @@ def index():
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
+    username = ''
 
     if 'username' in session:
         return redirect(url_for('auth.index'))
@@ -34,7 +35,7 @@ def login():
         else:
             error = 'Entered credentials do not belong to any account. Try again or register.'
 
-    return render_template('login.html', error=error)
+    return render_template('login.html', error=error, username=username)
 
 
 @auth.route('/logout')
@@ -45,6 +46,7 @@ def logout():
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
     error = None
+    username = ''
 
     if 'username' in session:
         return redirect(url_for('auth.index'))
@@ -76,4 +78,4 @@ def register():
 
             return redirect(url_for('auth.login'))
 
-    return render_template('registration.html', error=error)
+    return render_template('registration.html', error=error, username=username)

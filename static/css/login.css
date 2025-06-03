@@ -8,26 +8,23 @@
     padding: 1rem;
 }
 
-.auth-form {
+.auth-box {
     background: rgba(44, 62, 80, 0.95);
     backdrop-filter: blur(10px);
-    padding: 3rem 2.5rem;
+    padding: 2rem;
     border-radius: 20px;
     box-shadow:
         0 20px 60px rgba(0, 0, 0, 0.3),
         0 0 0 1px rgba(255, 255, 255, 0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    min-width: 400px;
-    max-width: 450px;
+    min-width: 450px;
+    max-width: 500px;
     width: 100%;
     border: 1px solid rgba(255, 255, 255, 0.1);
     position: relative;
     overflow: hidden;
 }
 
-.auth-form::before {
+.auth-box::before {
     content: '';
     position: absolute;
     top: 0;
@@ -35,6 +32,12 @@
     right: 0;
     height: 3px;
     background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
 .auth-form h2 {
@@ -88,13 +91,13 @@
 }
 
 .button-group {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 1rem;
     margin-top: 1rem;
 }
 
 .auth-submit {
-    flex: 1;
     padding: 1rem;
     font-size: 1rem;
     font-weight: 600;
@@ -107,6 +110,7 @@
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
     position: relative;
     overflow: hidden;
+    min-width: 120px; /* Ensures consistent width */
 }
 
 .auth-submit:hover {
@@ -119,7 +123,6 @@
 }
 
 .alt-button {
-    flex: 1;
     padding: 1rem;
     font-size: 1rem;
     font-weight: 600;
@@ -134,6 +137,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    min-width: 120px; /* Ensures consistent width */
 }
 
 .alt-button:hover {
@@ -199,16 +203,16 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 480px) {
-    .auth-form {
+@media (max-width: 600px) {
+    .auth-box {
         min-width: auto;
         max-width: 100%;
         margin: 1rem;
-        padding: 2rem 1.5rem;
+        padding: 1.5rem;
     }
 
     .button-group {
-        flex-direction: column;
+        grid-template-columns: 1fr;
     }
 
     .auth-form h2 {

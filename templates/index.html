@@ -6,16 +6,26 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    {% if weather %}
-        <h1>Current Weather Data</h1>
-
-        <p>Temperature: {{ weather.temperature }}°C</p>
-        <p>Humidity: {{ weather.humidity }}%</p>
-        <p>Air Pressure: {{ weather.air_pressure }}%</p>
-        <p>Timestamp: {{ weather.timestamp }}</p>
+    <h1>My Weather Report</h1>
+    {% if measurements %}
+        <table class="csv-preview">
+            <tr>
+                <th>Timestamp</th><th>Temp</th><th>Humidity</th><th>Pressure</th><th>Location</th>
+            </tr>
+            {% for m in measurements %}
+            <tr>
+                <td>{{ m.timestamp }}</td>
+                <td>{{ m.temperature }}</td>
+                <td>{{ m.humidity }}</td>
+                <td>{{ m.air_pressure }}</td>
+                <td>{{ m.location }}</td>
+            </tr>
+            {% endfor %}
+        </table>
     {% else %}
-        <h2>No weather data available</h2>
+        <h2>No weather data in database.</h2>
     {% endif %}
+
 
 
     <form method="post" action="/" enctype="multipart/form-data">
@@ -24,9 +34,15 @@
     </form>
 
 
+    {% if success %}
+      <p class="message success">{{ success }}</p>
+    {% elif error %}
+      <p class="message error">{{ error }}</p>
+    {% endif %}
+
     {% if preview_data %}
     <h3>Preview</h3>
-    <table>
+    <table class="csv-preview">
         <tr>
             <th>Timestamp</th><th>Temp</th><th>Humidity</th><th>Pressure</th><th>Location</th>
         </tr>
@@ -40,7 +56,8 @@
         </tr>
         {% endfor %}
     </table>
-    <form method="post" action="/save_csv">
+
+    <form method="post" action="/">
         <input type="hidden" name="session_csv" value="1">
         <button type="submit">Save to Database</button>
     </form>

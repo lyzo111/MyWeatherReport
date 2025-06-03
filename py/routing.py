@@ -1,3 +1,5 @@
+import csv
+from io import TextIOWrapper
 from flask import Blueprint, request, session, redirect, url_for, render_template
 from db_model import User, db
 
@@ -6,12 +8,83 @@ auth = Blueprint('auth', __name__)
 
 @auth.route('/', methods=['GET', 'POST'])
 def index():
-    if 'username' in session:
-        username = session['username']
-    else:
-        username = None
+    from db_model import Measurement
+    from datetime import datetime, timezone
 
-    return render_template('index.html', username=username)
+
+    username = session.get('username')
+    preview_data = session.get('csv_preview')
+    measurements = []
+    error = None
+    success = None
+
+    user = None
+    if username:
+        user = User.query.filter_by(username=username).first()
+
+    if request.method == 'POST':
+        if 'file' in request.files:
+            # CSV-Upload
+            file = request.files['file']
+            reader = csv.DictReader(TextIOWrapper(file, encoding='utf-8'))
+
+            preview_data = []
+            for row in reader:
+                try:
+                    preview_data.append({
+                    'timestamp': row['timestamp'],
+                    'temperature': float(row['temperature']),
+                    'humidity': float(row['humidity']),
+                    'air_pressure': float(row['air_pressure']),
+                    'location': row['location']
+                    })
+                except Exception as e:
+                    print(f"Error processing row {row}: {e}")
+            session['csv_preview'] = preview_data
+
+        elif 'session_csv' in request.form and username:
+            # Save CSV data to database
+            inserted = 0
+            duplicates = 0
+            if preview_data:
+                for row in preview_data:
+                    ts = datetime.fromisoformat(row['timestamp'].replace('Z', '+00:00'))
+                    exists = Measurement.query.filter_by(
+                        timestamp=ts,
+                        location=row['location'],
+                        user_id=user.id
+                    ).first()
+                    if not exists:
+                        m = Measurement(
+                            timestamp=ts,
+                            temperature=row['temperature'],
+                            humidity=row['humidity'],
+                            air_pressure=row['air_pressure'],
+                            location=row['location'],
+                            user_id=user.id
+                        )
+                        db.session.add(m)
+                        inserted += 1
+                    else:
+                        duplicates += 1
+            db.session.commit()
+            session.pop('csv_preview')
+            success = f"{inserted} values saved. {duplicates} duplicates skipped."
+            preview_data = None
+        else:
+            error = "Cannot save data."
+
+    if user:
+        measurements = Measurement.query.filter_by(user_id=user.id).order_by(Measurement.id.desc()).all()
+
+    return render_template(
+        'index.html',
+        username=username,
+        measurements=measurements,
+        preview_data=preview_data,
+        error=error,
+        success=success
+    )
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():

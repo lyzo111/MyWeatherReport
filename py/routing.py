@@ -208,13 +208,14 @@ def receive_esp32_data():
         live_data = session.get('live_data', [])
 
         # Add new data point
-        live_data.append({
+        new_data_point = {
             'timestamp': data['timestamp'],
             'temperature': float(data['temperature']),
             'humidity': float(data['humidity']),
             'air_pressure': float(data['air_pressure']),
             'location': data['location']
-        })
+        }
+        live_data.append(new_data_point)
 
         # Keep only last 50 live data points
         if len(live_data) > 50:
@@ -222,7 +223,45 @@ def receive_esp32_data():
 
         session['live_data'] = live_data
 
-        return jsonify({'status': 'success', 'message': 'Data received'}), 200
+        # Database storage logic - save every 10 minutes (600 seconds)
+        # Check if we need to save to database
+        last_db_save = session.get('last_db_save', 0)
+        current_time = datetime.now().timestamp()
+
+        # Save to database every 10 minutes (600 seconds)
+        if current_time - last_db_save >= 600:  # 10 minutes
+            try:
+                # Parse timestamp
+                ts = datetime.fromisoformat(data['timestamp'].replace('Z', '+00:00'))
+
+                # Create measurement record (no user_id = system/ESP32 data)
+                measurement = Measurement(
+                    timestamp=ts,
+                    temperature=float(data['temperature']),
+                    humidity=float(data['humidity']),
+                    air_pressure=float(data['air_pressure']),
+                    location=data['location'],
+                    user_id=None  # System data from ESP32
+                )
+
+                db.session.add(measurement)
+                db.session.commit()
+
+                # Update last save time
+                session['last_db_save'] = current_time
+
+                print(f"✅ ESP32 data saved to database: {data['location']} at {ts}")
+
+            except Exception as db_error:
+                print(f"❌ Database save error: {db_error}")
+                # Don't fail the whole request if DB save fails
+                pass
+
+        return jsonify({
+            'status': 'success',
+            'message': 'Data received',
+            'next_db_save_in': int(600 - (current_time - session.get('last_db_save', 0)))
+        }), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 400

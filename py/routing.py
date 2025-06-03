@@ -1,6 +1,7 @@
 import csv
-from io import TextIOWrapper
-from flask import Blueprint, request, session, redirect, url_for, render_template, jsonify
+import json
+from io import StringIO, TextIOWrapper
+from flask import Blueprint, request, session, redirect, url_for, render_template, jsonify, make_response
 from db_model import User, Measurement, db
 from datetime import datetime
 
@@ -224,6 +225,228 @@ def clear_live_data():
     """Clear live data from session"""
     session.pop('live_data', None)
     return redirect(url_for('auth.index'))
+
+
+@auth.route('/discard-preview', methods=['POST'])
+def discard_preview():
+    """Remove CSV preview from session"""
+    session.pop('csv_preview', None)
+    return jsonify({'status': 'success'})
+
+
+@auth.route('/export/csv')
+def export_csv():
+    """Export user's measurements as CSV"""
+    username = session.get('username')
+    if not username:
+        return redirect(url_for('auth.login'))
+
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return redirect(url_for('auth.login'))
+
+    # Get current filters to apply them to export
+    sort_by = request.args.get('sort_by', 'id')
+    sort_order = request.args.get('sort_order', 'desc')
+    location_filter = request.args.get('location', '')
+    temp_min = request.args.get('temp_min', type=float)
+    temp_max = request.args.get('temp_max', type=float)
+    humidity_min = request.args.get('humidity_min', type=float)
+    humidity_max = request.args.get('humidity_max', type=float)
+    pressure_min = request.args.get('pressure_min', type=float)
+    pressure_max = request.args.get('pressure_max', type=float)
+    date_from = request.args.get('date_from')
+    date_to = request.args.get('date_to')
+
+    # Build filtered query (same logic as in index route)
+    query = Measurement.query.filter_by(user_id=user.id)
+
+    # Apply filters
+    if location_filter:
+        query = query.filter(Measurement.location.ilike(f'%{location_filter}%'))
+    if temp_min is not None:
+        query = query.filter(Measurement.temperature >= temp_min)
+    if temp_max is not None:
+        query = query.filter(Measurement.temperature <= temp_max)
+    if humidity_min is not None:
+        query = query.filter(Measurement.humidity >= humidity_min)
+    if humidity_max is not None:
+        query = query.filter(Measurement.humidity <= humidity_max)
+    if pressure_min is not None:
+        query = query.filter(Measurement.air_pressure >= pressure_min)
+    if pressure_max is not None:
+        query = query.filter(Measurement.air_pressure <= pressure_max)
+    if date_from:
+        try:
+            date_from_dt = datetime.fromisoformat(date_from)
+            query = query.filter(Measurement.timestamp >= date_from_dt)
+        except ValueError:
+            pass
+    if date_to:
+        try:
+            date_to_dt = datetime.fromisoformat(date_to)
+            query = query.filter(Measurement.timestamp <= date_to_dt)
+        except ValueError:
+            pass
+
+    # Apply sorting
+    if sort_by == 'timestamp':
+        if sort_order == 'asc':
+            query = query.order_by(Measurement.timestamp.asc())
+        else:
+            query = query.order_by(Measurement.timestamp.desc())
+    elif sort_by == 'location':
+        if sort_order == 'asc':
+            query = query.order_by(Measurement.location.asc())
+        else:
+            query = query.order_by(Measurement.location.desc())
+    else:  # default to id
+        if sort_order == 'asc':
+            query = query.order_by(Measurement.id.asc())
+        else:
+            query = query.order_by(Measurement.id.desc())
+
+    measurements = query.all()
+
+    # Create CSV content
+    output = StringIO()
+    writer = csv.writer(output)
+
+    # Write header
+    writer.writerow(['id', 'timestamp', 'temperature', 'humidity', 'air_pressure', 'location'])
+
+    # Write data
+    for m in measurements:
+        writer.writerow([
+            m.id,
+            m.timestamp.isoformat(),
+            m.temperature,
+            m.humidity,
+            m.air_pressure,
+            m.location
+        ])
+
+    # Create response
+    output.seek(0)
+    response = make_response(output.getvalue())
+    response.headers['Content-Type'] = 'text/csv'
+    response.headers[
+        'Content-Disposition'] = f'attachment; filename=weather_data_{username}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+
+    return response
+
+
+@auth.route('/export/json')
+def export_json():
+    """Export user's measurements as JSON"""
+    username = session.get('username')
+    if not username:
+        return redirect(url_for('auth.login'))
+
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return redirect(url_for('auth.login'))
+
+    # Get current filters to apply them to export (same logic as CSV export)
+    sort_by = request.args.get('sort_by', 'id')
+    sort_order = request.args.get('sort_order', 'desc')
+    location_filter = request.args.get('location', '')
+    temp_min = request.args.get('temp_min', type=float)
+    temp_max = request.args.get('temp_max', type=float)
+    humidity_min = request.args.get('humidity_min', type=float)
+    humidity_max = request.args.get('humidity_max', type=float)
+    pressure_min = request.args.get('pressure_min', type=float)
+    pressure_max = request.args.get('pressure_max', type=float)
+    date_from = request.args.get('date_from')
+    date_to = request.args.get('date_to')
+
+    # Build filtered query (same logic as in index route)
+    query = Measurement.query.filter_by(user_id=user.id)
+
+    # Apply filters (same as CSV export)
+    if location_filter:
+        query = query.filter(Measurement.location.ilike(f'%{location_filter}%'))
+    if temp_min is not None:
+        query = query.filter(Measurement.temperature >= temp_min)
+    if temp_max is not None:
+        query = query.filter(Measurement.temperature <= temp_max)
+    if humidity_min is not None:
+        query = query.filter(Measurement.humidity >= humidity_min)
+    if humidity_max is not None:
+        query = query.filter(Measurement.humidity <= humidity_max)
+    if pressure_min is not None:
+        query = query.filter(Measurement.air_pressure >= pressure_min)
+    if pressure_max is not None:
+        query = query.filter(Measurement.air_pressure <= pressure_max)
+    if date_from:
+        try:
+            date_from_dt = datetime.fromisoformat(date_from)
+            query = query.filter(Measurement.timestamp >= date_from_dt)
+        except ValueError:
+            pass
+    if date_to:
+        try:
+            date_to_dt = datetime.fromisoformat(date_to)
+            query = query.filter(Measurement.timestamp <= date_to_dt)
+        except ValueError:
+            pass
+
+    # Apply sorting (same as CSV export)
+    if sort_by == 'timestamp':
+        if sort_order == 'asc':
+            query = query.order_by(Measurement.timestamp.asc())
+        else:
+            query = query.order_by(Measurement.timestamp.desc())
+    elif sort_by == 'location':
+        if sort_order == 'asc':
+            query = query.order_by(Measurement.location.asc())
+        else:
+            query = query.order_by(Measurement.location.desc())
+    else:  # default to id
+        if sort_order == 'asc':
+            query = query.order_by(Measurement.id.asc())
+        else:
+            query = query.order_by(Measurement.id.desc())
+
+    measurements = query.all()
+
+    # Create JSON data
+    data = {
+        'metadata': {
+            'export_date': datetime.now().isoformat(),
+            'user': username,
+            'total_records': len(measurements),
+            'filters_applied': {
+                'sort_by': sort_by,
+                'sort_order': sort_order,
+                'location': location_filter,
+                'temperature_range': [temp_min, temp_max],
+                'humidity_range': [humidity_min, humidity_max],
+                'pressure_range': [pressure_min, pressure_max],
+                'date_range': [date_from, date_to]
+            }
+        },
+        'measurements': []
+    }
+
+    # Add measurements data
+    for m in measurements:
+        data['measurements'].append({
+            'id': m.id,
+            'timestamp': m.timestamp.isoformat(),
+            'temperature': m.temperature,
+            'humidity': m.humidity,
+            'air_pressure': m.air_pressure,
+            'location': m.location
+        })
+
+    # Create response
+    response = make_response(json.dumps(data, indent=2))
+    response.headers['Content-Type'] = 'application/json'
+    response.headers[
+        'Content-Disposition'] = f'attachment; filename=weather_data_{username}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
+
+    return response
 
 
 @auth.route('/login', methods=['GET', 'POST'])

@@ -63,7 +63,10 @@
     <!-- CSV Import Section -->
     <div class="data-section">
         <div class="section-title">
-            <h3>Import Weather Data</h3>
+            <div class="section-header">
+                <h3>Import Weather Data</h3>
+                <button class="info-button" onclick="showInfoPopup('import')">ℹ️</button>
+            </div>
         </div>
 
         <form method="post" action="/" enctype="multipart/form-data" class="upload-form">
@@ -85,7 +88,10 @@
         {% endif %}
 
         {% if preview_data %}
-            <h3>Preview - Imported Data</h3>
+            <div class="preview-header">
+                <h3>Preview - Imported Data</h3>
+                <button type="button" class="discard-button" onclick="discardPreview()">🗑️ Discard</button>
+            </div>
             <table class="csv-preview">
                 <tr>
                     <th>Timestamp</th>
@@ -123,15 +129,19 @@
     <div class="data-section">
         <div class="section-title">
             <div class="section-header">
-                <h3>Your Saved Weather Data</h3>
+                <div class="title-with-info">
+                    <h3>Your Saved Weather Data</h3>
+                    <button class="info-button" onclick="showInfoPopup('export')">ℹ️</button>
+                </div>
                 <div class="export-buttons">
-                    <a href="/export/csv" class="export-button csv-export">📊 Export CSV</a>
-                    <a href="/export/json" class="export-button json-export">📄 Export JSON</a>
+                    <button onclick="exportData('csv')" class="export-button csv-export">📊 Export CSV</button>
+                    <button onclick="exportData('json')" class="export-button json-export">📄 Export JSON</button>
                 </div>
             </div>
         </div>
 
-        <!-- Filter Section -->
+        <!-- Filter Section (only show if user has data) -->
+        {% if measurements or current_filters.location or current_filters.temp_min or current_filters.temp_max or current_filters.humidity_min or current_filters.humidity_max or current_filters.pressure_min or current_filters.pressure_max or current_filters.date_from or current_filters.date_to %}
         <div class="filter-section">
             <form method="get" action="/">
                 <div class="filter-grid">
@@ -198,6 +208,7 @@
                 </div>
             </form>
         </div>
+        {% endif %}
 
         {% if measurements %}
             <p style="text-align: center; color: #ccc;">
@@ -231,6 +242,19 @@
 
     <!-- Chart Section -->
     <canvas id="weatherChart" width="600" height="300"></canvas>
+
+    <!-- Info Popups -->
+    <div id="popup-overlay" class="popup-overlay" onclick="closePopup()">
+        <div class="popup-content" onclick="event.stopPropagation()">
+            <div class="popup-header">
+                <h4 id="popup-title">Information</h4>
+                <button class="popup-close" onclick="closePopup()">×</button>
+            </div>
+            <div class="popup-body" id="popup-body">
+                <!-- Content will be inserted here -->
+            </div>
+        </div>
+    </div>
 
     <!-- JS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -327,6 +351,87 @@
                 }
             });
         }
+
+        // Info popup functions
+        function showInfoPopup(type) {
+            const overlay = document.getElementById('popup-overlay');
+            const title = document.getElementById('popup-title');
+            const body = document.getElementById('popup-body');
+
+            if (type === 'import') {
+                title.textContent = 'CSV Import Format';
+                body.innerHTML = `
+                    <p><strong>Required CSV format:</strong></p>
+                    <div class="csv-format">
+                        <code>timestamp,temperature,humidity,air_pressure,location</code><br>
+                        <code>2024-01-15T10:30:00,23.5,65.2,1013.25,Living Room</code><br>
+                        <code>2024-01-15T11:00:00,24.1,63.8,1012.80,Kitchen</code>
+                    </div>
+                    <p><strong>Important:</strong></p>
+                    <ul>
+                        <li>First row must be the header (column names)</li>
+                        <li><strong>timestamp:</strong> ISO format (YYYY-MM-DDTHH:MM:SS)</li>
+                        <li><strong>temperature:</strong> Celsius (decimal number)</li>
+                        <li><strong>humidity:</strong> Percentage (decimal number)</li>
+                        <li><strong>air_pressure:</strong> hPa (decimal number)</li>
+                        <li><strong>location:</strong> Text description</li>
+                    </ul>
+                `;
+            } else if (type === 'export') {
+                title.textContent = 'Export Information';
+                body.innerHTML = `
+                    <p><strong>What gets exported:</strong></p>
+                    <ul>
+                        <li>All data visible in the current table view</li>
+                        <li>Respects all active filters (location, temperature, etc.)</li>
+                        <li>Uses current sorting order</li>
+                    </ul>
+                    <p><strong>CSV Export:</strong> Simple comma-separated format</p>
+                    <p><strong>JSON Export:</strong> Includes metadata and structured data</p>
+                    <div class="export-tip">
+                        💡 <strong>Tip:</strong> Apply filters before exporting to get only the data you need!
+                    </div>
+                `;
+            }
+
+            overlay.style.display = 'flex';
+            setTimeout(() => overlay.classList.add('show'), 10);
+        }
+
+        function closePopup() {
+            const overlay = document.getElementById('popup-overlay');
+            overlay.classList.remove('show');
+            setTimeout(() => overlay.style.display = 'none', 300);
+        }
+
+        function discardPreview() {
+            if (confirm('Are you sure you want to discard the uploaded CSV preview?')) {
+                // Send request to clear session data
+                fetch('/discard-preview', { method: 'POST' })
+                    .then(() => window.location.reload())
+                    .catch(error => console.error('Error:', error));
+            }
+        }
+
+        function exportData(format) {
+            // Build current URL with all filter parameters
+            const currentUrl = new URL(window.location);
+            const exportUrl = `/export/${format}${currentUrl.search}`;
+
+            // Create temporary link and click it for download
+            const link = document.createElement('a');
+            link.href = exportUrl;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Make functions global
+        window.showInfoPopup = showInfoPopup;
+        window.closePopup = closePopup;
+        window.discardPreview = discardPreview;
+        window.exportData = exportData;
     </script>
     <!-- <script src="index.js"></script> -->
 </body>

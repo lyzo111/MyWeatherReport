@@ -13,7 +13,6 @@ def index():
 
     username = session.get('username')
     preview_data = session.get('csv_preview')
-    measurements = []
     error = None
     success = None
 
@@ -75,6 +74,10 @@ def index():
 
     if user:
         measurements = Measurement.query.filter_by(user_id=user.id).order_by(Measurement.id.desc()).all()
+        locations = sorted(set(m.location for m in measurements))
+    else:
+        measurements = []
+        locations = []
 
     return render_template(
         'index.html',
@@ -82,7 +85,8 @@ def index():
         measurements=measurements,
         preview_data=preview_data,
         error=error,
-        success=success
+        success=success,
+        locations=locations
     )
 
 

@@ -66,9 +66,16 @@
             <h3>Import Weather Data</h3>
         </div>
 
-        <form method="post" action="/" enctype="multipart/form-data">
-            <input type="file" name="file" accept=".csv" required>
-            <input type="submit" value="Upload CSV">
+        <form method="post" action="/" enctype="multipart/form-data" class="upload-form">
+            <div class="file-upload-container">
+                <input type="file" name="file" id="csv-file" accept=".csv" required>
+                <label for="csv-file" class="file-upload-button">
+                    <span class="upload-icon">📁</span>
+                    <span class="upload-text">Choose CSV File</span>
+                </label>
+                <span class="file-name" id="file-name">No file selected</span>
+            </div>
+            <button type="submit" class="upload-submit-button">Upload CSV</button>
         </form>
 
         {% if success %}
@@ -115,7 +122,13 @@
     {% if username %}
     <div class="data-section">
         <div class="section-title">
-            <h3>Your Saved Weather Data</h3>
+            <div class="section-header">
+                <h3>Your Saved Weather Data</h3>
+                <div class="export-buttons">
+                    <a href="/export/csv" class="export-button csv-export">📊 Export CSV</a>
+                    <a href="/export/json" class="export-button json-export">📄 Export JSON</a>
+                </div>
+            </div>
         </div>
 
         <!-- Filter Section -->
@@ -298,6 +311,22 @@
 
             console.log('Chart created successfully');
         });
+
+        // File upload handling
+        const fileInput = document.getElementById('csv-file');
+        const fileNameSpan = document.getElementById('file-name');
+
+        if (fileInput && fileNameSpan) {
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files.length > 0) {
+                    fileNameSpan.textContent = this.files[0].name;
+                    fileNameSpan.classList.add('file-selected');
+                } else {
+                    fileNameSpan.textContent = 'No file selected';
+                    fileNameSpan.classList.remove('file-selected');
+                }
+            });
+        }
     </script>
     <!-- <script src="index.js"></script> -->
 </body>

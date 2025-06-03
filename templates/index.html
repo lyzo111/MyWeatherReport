@@ -247,6 +247,58 @@
             {% endfor %}
         };
     </script>
-    <script src="index.js"></script>
+    <script>
+        // Simple inline chart test
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('Testing chart inline...');
+            console.log('Weather data:', window.weatherByLocation);
+
+            const chartElement = document.getElementById('weatherChart');
+            if (!chartElement) {
+                console.log('Chart element not found');
+                return;
+            }
+
+            const weatherByLocation = window.weatherByLocation || {};
+
+            if (Object.keys(weatherByLocation).length === 0) {
+                console.log('No weather data available');
+                chartElement.style.display = 'none';
+                return;
+            }
+
+            const ctx = chartElement.getContext('2d');
+            const datasets = Object.entries(weatherByLocation).map(([location, data], index) => {
+                const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7'];
+                return {
+                    label: location + ' (Temperature)',
+                    data: data.labels.map((label, i) => ({x: label, y: data.data[i]})),
+                    borderColor: colors[index % colors.length],
+                    backgroundColor: colors[index % colors.length] + '33',
+                    tension: 0.4,
+                    fill: false
+                };
+            });
+
+            new Chart(ctx, {
+                type: 'line',
+                data: { datasets: datasets },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: { type: 'category', title: { display: true, text: 'Time' } },
+                        y: { title: { display: true, text: 'Temperature (°C)' } }
+                    },
+                    plugins: {
+                        title: { display: true, text: 'Temperature Over Time by Location' },
+                        legend: { display: true, position: 'top' }
+                    }
+                }
+            });
+
+            console.log('Chart created successfully');
+        });
+    </script>
+    <!-- <script src="index.js"></script> -->
 </body>
 </html>

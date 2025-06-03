@@ -1,15 +1,20 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // Welcome message handling - only show after actual login
-    const welcomeMessage = document.getElementById('welcome-message');
-    if (welcomeMessage) {
-        // Welcome message will be handled by inline script in template
-        // This ensures it only shows when show_welcome is true from server
-    }
+    console.log('DOM loaded, initializing weather station...');
 
     // Chart handling
     const chartElement = document.getElementById('weatherChart');
-    if (chartElement && window.weatherByLocation) {
-        initializeChart();
+    if (chartElement) {
+        console.log('Chart element found, checking for data...');
+        console.log('Weather data:', window.weatherByLocation);
+
+        if (window.weatherByLocation && Object.keys(window.weatherByLocation).length > 0) {
+            initializeChart();
+        } else {
+            console.log('No weather data available for chart');
+            chartElement.style.display = 'none';
+        }
+    } else {
+        console.log('Chart element not found');
     }
 
     // Live data auto-refresh
@@ -20,6 +25,8 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function initializeChart() {
+    console.log('Initializing chart...');
+
     const ctx = document.getElementById('weatherChart').getContext('2d');
     const weatherByLocation = window.weatherByLocation || {};
 
@@ -29,7 +36,9 @@ function initializeChart() {
             '#fd79a8', '#a29bfe', '#6c5ce7', '#fd63a8', '#fab1a0'
         ];
 
-        // Create data points for Chart.js
+        console.log(`Processing location: ${location}, data points: ${data.data.length}`);
+
+        // Create data points for Chart.js - use simple format
         const chartData = data.labels.map((label, i) => ({
             x: label,
             y: data.data[i]
@@ -48,63 +57,71 @@ function initializeChart() {
     });
 
     if (datasets.length === 0) {
-        // Hide chart if no data
+        console.log('No datasets to display');
         document.getElementById('weatherChart').style.display = 'none';
         return;
     }
 
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            datasets: datasets
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                intersect: false,
-                mode: 'index'
+    console.log('Creating chart with datasets:', datasets.length);
+
+    try {
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                datasets: datasets
             },
-            scales: {
-                x: {
-                    type: 'category',
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                scales: {
+                    x: {
+                        type: 'category',
+                        title: {
+                            display: true,
+                            text: 'Time'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Temperature (°C)'
+                        }
+                    }
+                },
+                plugins: {
                     title: {
                         display: true,
-                        text: 'Time'
-                    }
-                },
-                y: {
-                    title: {
+                        text: 'Temperature Over Time by Location',
+                        font: {
+                            size: 16
+                        }
+                    },
+                    legend: {
                         display: true,
-                        text: 'Temperature (°C)'
-                    }
-                }
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Temperature Over Time by Location',
-                    font: {
-                        size: 16
-                    }
-                },
-                legend: {
-                    display: true,
-                    position: 'top'
-                },
-                tooltip: {
-                    callbacks: {
-                        title: function(context) {
-                            return 'Time: ' + context[0].label;
-                        },
-                        label: function(context) {
-                            return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + '°C';
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                return 'Time: ' + context[0].label;
+                            },
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + '°C';
+                            }
                         }
                     }
                 }
             }
-        }
-    });
+        });
+
+        console.log('Chart created successfully');
+    } catch (error) {
+        console.error('Error creating chart:', error);
+    }
 }
 
 function startLiveDataRefresh() {

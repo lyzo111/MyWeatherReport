@@ -5,6 +5,7 @@ from routing import auth
 from datetime import timedelta
 from secrets import token_hex
 
+
 def create_app():
     app = Flask(
         __name__,
@@ -24,7 +25,6 @@ def create_app():
 
 
 app = create_app()
-
 
 if __name__ == '__main__':
     with app.app_context():

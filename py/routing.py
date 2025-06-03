@@ -3,14 +3,13 @@ from io import TextIOWrapper
 from flask import Blueprint, request, session, redirect, url_for, render_template
 from db_model import User, db
 
-
 auth = Blueprint('auth', __name__)
+
 
 @auth.route('/', methods=['GET', 'POST'])
 def index():
     from db_model import Measurement
     from datetime import datetime, timezone
-
 
     username = session.get('username')
     preview_data = session.get('csv_preview')
@@ -32,11 +31,11 @@ def index():
             for row in reader:
                 try:
                     preview_data.append({
-                    'timestamp': row['timestamp'],
-                    'temperature': float(row['temperature']),
-                    'humidity': float(row['humidity']),
-                    'air_pressure': float(row['air_pressure']),
-                    'location': row['location']
+                        'timestamp': row['timestamp'],
+                        'temperature': float(row['temperature']),
+                        'humidity': float(row['humidity']),
+                        'air_pressure': float(row['air_pressure']),
+                        'location': row['location']
                     })
                 except Exception as e:
                     print(f"Error processing row {row}: {e}")
@@ -86,6 +85,7 @@ def index():
         success=success
     )
 
+
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
@@ -116,6 +116,7 @@ def logout():
     session.clear()
     return redirect(url_for('auth.index'))
 
+
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
     error = None
@@ -143,7 +144,7 @@ def register():
 
             new_user = User(
                 username=username,
-                is_admin=is_first_user # First user is admin
+                is_admin=is_first_user  # First user is admin
             )
             new_user.set_password(password)
             db.session.add(new_user)

@@ -6,13 +6,17 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <h1>My Weather Report</h1>
-    {% if measurements %}
-        <table class="csv-preview">
-            <tr>
-                <th>Timestamp</th><th>Temp</th><th>Humidity</th><th>Pressure</th><th>Location</th>
-            </tr>
-            {% for m in measurements %}
+<h1>My Weather Report</h1>
+{% if measurements %}
+    <table class="csv-preview">
+        <tr>
+            <th>Timestamp</th>
+            <th>Temp</th>
+            <th>Humidity</th>
+            <th>Pressure</th>
+            <th>Location</th>
+        </tr>
+        {% for m in measurements %}
             <tr>
                 <td>{{ m.timestamp }}</td>
                 <td>{{ m.temperature }}</td>
@@ -20,40 +24,44 @@
                 <td>{{ m.air_pressure }}</td>
                 <td>{{ m.location }}</td>
             </tr>
-            {% endfor %}
-        </table>
-    {% else %}
-        <h2>No weather data in database.</h2>
-    {% endif %}
+        {% endfor %}
+    </table>
+{% else %}
+    <h2>No weather data in database.</h2>
+{% endif %}
 
 
 
-    <form method="post" action="/" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".csv" required>
-        <input type="submit" value="Upload CSV">
-    </form>
+<form method="post" action="/" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".csv" required>
+    <input type="submit" value="Upload CSV">
+</form>
 
 
-    {% if success %}
-      <p class="message success">{{ success }}</p>
-    {% elif error %}
-      <p class="message error">{{ error }}</p>
-    {% endif %}
+{% if success %}
+    <p class="message success">{{ success }}</p>
+{% elif error %}
+    <p class="message error">{{ error }}</p>
+{% endif %}
 
-    {% if preview_data %}
+{% if preview_data %}
     <h3>Preview</h3>
     <table class="csv-preview">
         <tr>
-            <th>Timestamp</th><th>Temp</th><th>Humidity</th><th>Pressure</th><th>Location</th>
+            <th>Timestamp</th>
+            <th>Temp</th>
+            <th>Humidity</th>
+            <th>Pressure</th>
+            <th>Location</th>
         </tr>
         {% for row in preview_data %}
-        <tr>
-            <td>{{ row.timestamp }}</td>
-            <td>{{ row.temperature }}</td>
-            <td>{{ row.humidity }}</td>
-            <td>{{ row.air_pressure }}</td>
-            <td>{{ row.location }}</td>
-        </tr>
+            <tr>
+                <td>{{ row.timestamp }}</td>
+                <td>{{ row.temperature }}</td>
+                <td>{{ row.humidity }}</td>
+                <td>{{ row.air_pressure }}</td>
+                <td>{{ row.location }}</td>
+            </tr>
         {% endfor %}
     </table>
 
@@ -61,28 +69,42 @@
         <input type="hidden" name="session_csv" value="1">
         <button type="submit">Save to Database</button>
     </form>
-    {% endif %}
+{% endif %}
 
 
-    <canvas id="weatherChart" width="600" height="300"></canvas>
+<canvas id="weatherChart" width="600" height="300"></canvas>
 
 
-    {% if username %}
-        <p id="welcome-message">Welcome, {{ username }}! <a href="/logout"><button>Logout</button></a></p>
-    {% else %}
-        <a href="/login"><button>Login</button></a>
-        <a href="/register"><button>Register</button></a>
-    {% endif %}
+{% if username %}
+    <p id="welcome-message">Welcome, {{ username }}! <a href="/logout">
+        <button>Logout</button>
+    </a></p>
+{% else %}
+    <a href="/login">
+        <button>Login</button>
+    </a>
+    <a href="/register">
+        <button>Register</button>
+    </a>
+{% endif %}
 
 
-    <!-- JS chart logic -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+<!-- JS chart logic -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
 
-    <script>
-        window.weatherLabels = [{% for m in measurements %}'{{ m.timestamp }}', {% endfor %}];
-        window.weatherData = [{% for m in measurements %}{{ m.temperature }}, {% endfor %}];
-    </script>
+<script>
+    window.weatherByLocation = {
+        {% for location in locations %}
+            '{{ location }}': {
+                labels: [{% for m in measurements if m.location == location %}'{{ m.timestamp }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+                data: [{% for m in measurements if m.location == location %}{{ m.temperature }}{% if not loop.last %}, {% endif %}{% endfor %}]
+            },
+        {% endfor %}
+    };
+</script>
+
+
 
 </body>
 </html>
